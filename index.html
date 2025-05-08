@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interactive Dashboard Showcase</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --bg-light: #f8fafc;
+      --bg-dark: #0f172a;
+      --text-light: #f1f5f9;
+      --text-dark: #020617;
+      --accent: #facc15;
+      --card-shadow: rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-dark);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-light);
+    }
+
+    .particles {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+      background: radial-gradient(circle at center, #e0eafc, #cfdef3);
+      transition: background 0.5s ease;
+    }
+
+    body.dark .particles {
+      background: radial-gradient(circle at center, #0f172a, #1e293b);
+    }
+
+    .particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(37, 99, 235, 0.2);
+      border-radius: 50%;
+      animation: float 12s infinite linear;
+      opacity: 0.6;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-20vh) translateX(80vw); opacity: 0; }
+    }
+
+    header {
+      text-align: center;
+      padding: 4rem 1rem 2rem;
+    }
+
+    header h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      color: transparent;
+      margin-bottom: 1rem;
+    }
+
+    header p {
+      max-width: 700px;
+      margin: 0 auto;
+      font-size: 1.1rem;
+      color: #4b5563;
+    }
+
+    .dashboard-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+      justify-items: center;
+    }
+
+    .dashboard-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px var(--card-shadow);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 360px;
+    }
+
+    .dashboard-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .chart-container {
+      width: 100%;
+      max-width: 300px;
+      height: auto;
+      min-height: 200px;
+      margin-top: 1rem;
+    }
+
+    canvas.chart {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    .dashboard-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .dashboard-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .dark-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: 2px solid currentColor;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      z-index: 1000;
+    }
+
+    .cta-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4rem 2rem;
+      text-align: center;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(250, 204, 21, 0.05));
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      padding: 0.85rem 2.5rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(37, 99, 235, 0.35);
+    }
+
+    .cta-subtext {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #6b7280;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 2.25rem;
+      }
+
+      .chart-container {
+        max-width: 260px;
+      }
+
+      .cta-button {
+        font-size: 1.1rem;
+        padding: 0.75rem 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="dark-toggle" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+  <div class="particles" id="particles"></div>
+
+  <header>
+    <h1>📊 Interactive Dashboards</h1>
+    <p>Explore beautiful, responsive, and interactive dashboards built from CSV data. No forms. No friction. Just pure insights.</p>
+  </header>
+
+  <section class="dashboard-section">
+    <!-- Dashboard Cards -->
+    <div class="dashboard-card">
+      <div class="dashboard-header">
+        <div class="dashboard-title">Sales Analytics</div>
+      </div>
+      <div class="chart-container">
+        <canvas class="chart" id="chart1"></canvas>
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <div class="dashboard-header">
+        <div class="dashboard-title">User Behavior</div>
+      </div>
+      <div class="chart-container">
+        <canvas class="chart" id="chart2"></canvas>
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <div class="dashboard-header">
+        <div class="dashboard-title">Financial Overview</div>
+      </div>
+      <div class="chart-container">
+        <canvas class="chart" id="chart3"></canvas>
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <div class="dashboard-header">
+        <div class="dashboard-title">Inventory Tracker</div>
+      </div>
+      <div class="chart-container">
+        <canvas class="chart" id="chart4"></canvas>
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <div class="dashboard-header">
+        <div class="dashboard-title">Marketing ROI</div>
+      </div>
+      <div class="chart-container">
+        <canvas class="chart" id="chart5"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <a href="https://tally.so/r/3l50yX" target="_blank" class="cta-button">Create for Free</a>
+    <div class="cta-subtext">No sign up • No credit card required • Instant dashboard generation</div>
+  </section>
+
+  <footer class="footer">
+    &copy; 2025 Dashboard Showcase. Built with ❤️ and Chart.js.
+  </footer>
+
+  <script>
+    // Chart configurations and particle generation remain unchanged
+    // ... (same as previous code)
+
+    // Generate random data
+    const rand = () => Math.floor(Math.random() * 100);
+
+    // Chart 1 - Sales Line
+    new Chart(document.getElementById('chart1'), {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Revenue',
+          data: [rand(), rand(), rand(), rand(), rand(), rand()],
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+          tension: 0.4,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: '#2563eb'
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 1200 },
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { display: false } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    // Chart 2 - User Bar
+    new Chart(document.getElementById('chart2'), {
+      type: 'bar',
+      data: {
+        labels: ['New', 'Returning', 'Guest'],
+        datasets: [{
+          label: 'Users',
+          data: [rand(), rand(), rand()],
+          backgroundColor: '#facc15',
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { grid: { display: false }, ticks: { display: false } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    // Chart 3 - Finance Pie
+    new Chart(document.getElementById('chart3'), {
+      type: 'pie',
+      data: {
+        labels: ['Expenses', 'Income', 'Savings'],
+        datasets: [{
+          data: [30, 50, 20],
+          backgroundColor: ['#2563eb', '#facc15', '#10b981']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+
+    // Chart 4 - Radar
+    new Chart(document.getElementById('chart4'), {
+      type: 'radar',
+      data: {
+        labels: ['Stock', 'Sales', 'Out of Stock', 'Restock', 'Units'],
+        datasets: [{
+          label: 'Inventory',
+          data: [rand(), rand(), rand(), rand(), rand()],
+          backgroundColor: 'rgba(99, 102, 241, 0.4)',
+          borderColor: '#6366f1'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: { ticks: { display: false } }
+        }
+      }
+    });
+
+    // Chart 5 - Doughnut
+    new Chart(document.getElementById('chart5'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Paid', 'Pending', 'Failed'],
+        datasets: [{
+          data: [70, 20, 10],
+          backgroundColor: ['#10b981', '#facc15', '#ef4444']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+
+    // Dark Mode Toggle
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+    }
+
+    // Floating Particles
+    const particles = document.getElementById('particles');
+    for (let i = 0; i < 60; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = `${Math.random() * 100}vw`;
+      p.style.top = `${Math.random() * 100}vh`;
+      p.style.animationDuration = `${6 + Math.random() * 8}s`;
+      particles.appendChild(p);
+    }
+  </script>
+</body>
+</html>
